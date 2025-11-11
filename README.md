@@ -254,10 +254,23 @@ Once the model is downloaded, Docker will not re-download it on subsequent runs.
 **Option A: Automatic Setup & Start (Easiest)**
 
 ```bash
-# This script checks for the model, runs setup if needed, and starts Docker
-bash start_docker.sh
+# This script checks for the model, runs setup if needed, and starts Docker.
+# Run it from the repository root.
+# Unix / macOS / WSL (recommended):
+./start_docker.sh
 
-# That's it! The API will be ready at http://localhost:8000/docs
+# If the script is not executable:
+chmod +x start_docker.sh
+./start_docker.sh
+```
+
+On Windows PowerShell (when using WSL or Git Bash), run the script with bash:
+
+```powershell
+# From PowerShell (requires 'bash' in PATH, e.g., Git Bash or WSL):
+bash .\start_docker.sh
+# Or run inside WSL directly:
+wsl ./start_docker.sh
 ```
 
 **Option B: Manual Setup & Start**
