@@ -1,0 +1,50 @@
+services:
+  deepseek-ocr-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: deepseek-ocr-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount model data directory (so you don't need to download in container)
+      - ./model_data:/app/model_data:ro
+      # Mount output directory (to persist outputs)
+      - ./outputs:/tmp/deepseek_ocr/outputs
+      # Optional: mount custom config
+      # - ./api/custom_config.env:/app/.env
+    environment:
+      # API Configuration
+      - DEEPSEEK_OCR_DEBUG=false
+      - DEEPSEEK_OCR_WORKERS=1
+      - DEEPSEEK_OCR_MAX_UPLOAD_SIZE=52428800  # 50MB
+      - DEEPSEEK_OCR_CLEANUP_TEMP_FILES=true
+      # Model Configuration
+      - DEEPSEEK_OCR_DEVICE=cpu
+      # CORS Configuration (adjust for production)
+      - DEEPSEEK_OCR_CORS_ORIGINS=["*"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+# Optional: Add a reverse proxy (nginx) for production
+#  nginx:
+#    image: nginx:alpine
+#    container_name: deepseek-ocr-nginx
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#      - ./ssl:/etc/nginx/ssl:ro
+#    depends_on:
+#      - deepseek-ocr-api
+#    restart: unless-stopped
+
+volumes:
+  model_data:
+  outputs:
