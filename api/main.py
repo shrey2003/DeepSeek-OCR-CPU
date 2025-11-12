@@ -245,7 +245,6 @@ async def process_image_endpoint(
 )
 async def process_pdf_endpoint(
     file: UploadFile = File(..., description="PDF file to process"),
-    max_pages: Optional[int] = None,
     start_page: Optional[int] = None,
     end_page: Optional[int] = None,
     save_output: bool = True,
@@ -254,7 +253,6 @@ async def process_pdf_endpoint(
     Process a PDF file with OCR.
     
     - **file**: PDF file to process
-    - **max_pages**: Maximum number of pages to process
     - **start_page**: Starting page number (1-indexed)
     - **end_page**: Ending page number (1-indexed)
     - **save_output**: Whether to save output files
@@ -284,7 +282,6 @@ async def process_pdf_endpoint(
         result, metrics = process_pdf_with_metrics(
             str(temp_file),
             output_dir=str(output_dir) if output_dir else None,
-            max_pages=max_pages,
             start_page=start_page,
             end_page=end_page,
         )
@@ -299,9 +296,9 @@ async def process_pdf_endpoint(
         return PDFOCRResponse(
             success=True,
             text=result,
-            num_pages=metrics.num_pages if metrics else 0,
+            num_pages=metrics.num_operations if metrics else 0,
             processing_time=processing_time,
-            pages_processed=list(range(1, (metrics.num_pages if metrics else 0) + 1)),
+            pages_processed=list(range(1, (metrics.num_operations if metrics else 0) + 1)),
             output_files=output_files if output_files else None
         )
         
@@ -332,7 +329,6 @@ async def process_pdf_endpoint(
 )
 async def process_pdf_enhanced_endpoint(
     file: UploadFile = File(..., description="PDF file to process"),
-    max_pages: Optional[int] = None,
     start_page: Optional[int] = None,
     end_page: Optional[int] = None,
     generate_overlays: bool = True,
@@ -343,7 +339,6 @@ async def process_pdf_enhanced_endpoint(
     Process a PDF file with enhanced extraction capabilities.
     
     - **file**: PDF file to process
-    - **max_pages**: Maximum number of pages to process
     - **start_page**: Starting page number (1-indexed)
     - **end_page**: Ending page number (1-indexed)
     - **generate_overlays**: Generate element overlay images
@@ -375,7 +370,6 @@ async def process_pdf_enhanced_endpoint(
         result = process_pdf_enhanced(
             str(temp_file),
             output_dir=str(output_dir) if output_dir else None,
-            max_pages=max_pages,
             start_page=start_page,
             end_page=end_page,
             generate_overlays=generate_overlays,

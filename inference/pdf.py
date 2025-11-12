@@ -53,6 +53,8 @@ def process_pdf_enhanced(
     extract_options: Optional[Dict] = None,
     generate_overlays: bool = True,
     save_elements: bool = True,
+    start_page: Optional[int] = None,
+    end_page: Optional[int] = None,
 ) -> Dict:
     """
     Run OCR on each PDF page with enhanced element extraction.
@@ -66,6 +68,8 @@ def process_pdf_enhanced(
         extract_options: Options for element extraction
         generate_overlays: Whether to generate type-specific overlay images
         save_elements: Whether to save individual element images
+        start_page: Starting page number (1-indexed, inclusive)
+        end_page: Ending page number (1-indexed, inclusive)
     
     Returns:
         Dictionary with:
@@ -89,11 +93,20 @@ def process_pdf_enhanced(
     if not image_paths:
         raise ValueError(f"No pages found in PDF: {pdf_path_obj}")
 
+    # Apply page range filtering
+    if start_page is not None or end_page is not None:
+        start_idx = (start_page - 1) if start_page is not None else 0
+        end_idx = end_page if end_page is not None else len(image_paths)
+        image_paths = image_paths[start_idx:end_idx]
+        
+        if not image_paths:
+            raise ValueError(f"No pages in range {start_page}-{end_page}")
+
     # Process each page with enhanced extraction
     page_results = []
     page_markdowns = []
     
-    for index, image_path in enumerate(image_paths, start=1):
+    for index, image_path in enumerate(image_paths, start=(start_page if start_page else 1)):
         print(f"\nProcessing page {index}/{len(image_paths)}...")
         
         page_output_dir = output_root / f"page_{index:04d}"
@@ -168,10 +181,19 @@ def process_pdf_enhanced(
 
 
 def process_pdf_with_metrics(
-    pdf_path: str, output_dir: Optional[str] = None
+    pdf_path: str, 
+    output_dir: Optional[str] = None,
+    start_page: Optional[int] = None,
+    end_page: Optional[int] = None,
 ) -> Tuple[str, AggregateMetrics]:
     """
     Run OCR on each PDF page and return result with performance metrics.
+    
+    Args:
+        pdf_path: Path to input PDF
+        output_dir: Directory for outputs (auto-generated if None)
+        start_page: Starting page number (1-indexed, inclusive)
+        end_page: Ending page number (1-indexed, inclusive)
     
     Returns:
         Tuple of (combined_markdown, aggregate_metrics)
@@ -187,11 +209,20 @@ def process_pdf_with_metrics(
     if not image_paths:
         raise ValueError(f"No pages found in PDF: {pdf_path_obj}")
 
+    # Apply page range filtering
+    if start_page is not None or end_page is not None:
+        start_idx = (start_page - 1) if start_page is not None else 0
+        end_idx = end_page if end_page is not None else len(image_paths)
+        image_paths = image_paths[start_idx:end_idx]
+        
+        if not image_paths:
+            raise ValueError(f"No pages in range {start_page}-{end_page}")
+
     # Track metrics for each page
     tracker = PerformanceTracker()
     page_markdowns: List[str] = []
     
-    for index, image_path in enumerate(image_paths, start=1):
+    for index, image_path in enumerate(image_paths, start=(start_page if start_page else 1)):
         page_output_dir = output_root / f"page_{index:04d}"
         page_output_dir.mkdir(parents=True, exist_ok=True)
         
